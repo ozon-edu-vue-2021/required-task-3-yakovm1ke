@@ -7,21 +7,32 @@
             />
         </div>
         <div class="person__info">
-            <div class="person__info-name">
-                <b>{{ person.name }} ({{ person.age }})</b>
+            <div class="person__info-header">
+                <div class="person__info-name">
+                    <b>{{ person.name }} ({{ person.age }})</b> 
+                </div>
+                <div class="person__info-email">
+                    <a :href="'mailto:' + person.email">
+                        <Mail class="mail-icon"/> 
+                    </a>
+                </div>
             </div>
-
-            <div class="person__info-email">Почта: {{ person.email }}</div>
-            <div class="person__info-email">
-                Дата регистрации: {{ formatedDate }}
+            <div class="person__info-registrated">
+                <b>Дата регистрации:</b><br>
+                {{ formatedDate }}
             </div>
-            <div class="person__info-about">О себе: {{ person.about }}</div>
+            <div class="person__info-about"><b>О себе: </b>{{ person.about }}</div>
         </div>
     </div>
 </template>
 
 <script>
+import Mail from "@/assets/icons/mail.svg";
+
 export default {
+    components: {
+        Mail,
+    },
     props: {
         person: {
             type: Object,
@@ -30,7 +41,8 @@ export default {
     },
     computed: {
         formatedDate() {
-            return this.person.registered;
+            const [ year, month, day, time ] = this.person.registered.split(/-|T/);
+            return `${day}.${month}.${year} в ${time}`;
         },
     },
 };
@@ -54,7 +66,30 @@ export default {
     grid-gap: 8px;
 }
 
-.person__info-name {
-    margin-bottom: 10px;
+.person__info-header {
+    padding: 0 10px;
+    background-color: #FFCCFF;
+    border-radius: 10px;
+    height: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
+
+.mail-icon {
+    height: 20px;
+}
+
+.person__info-registrated {
+    padding: 5px 10px;
+    background-color: #CCCCFF;
+    border-radius: 10px;
+}
+
+.person__info-about {
+    padding: 5px 10px;
+    background-color: #FFCCCC;
+    border-radius: 10px;
+}
+
 </style>
