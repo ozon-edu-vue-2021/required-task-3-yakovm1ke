@@ -1,8 +1,13 @@
 <template>
     <div id="app">
         <div class="office">
-            <Map />
-            <SideMenu />
+            <Map 
+                @onSelect="personSelected"
+            />
+            <SideMenu
+                @onClose="personSelected"
+                :selectedPerson="selectedPerson"
+            />
         </div>
     </div>
 </template>
@@ -10,13 +15,40 @@
 <script>
 import Map from "./components/Map.vue";
 import SideMenu from "./components/SideMenu.vue";
+import people from "@/assets/data/people.json";
 
 export default {
-  name: "App",
-  components: {
-    Map,
-    SideMenu,
-  },
+    name: "App",
+    components: {
+        Map,
+        SideMenu,
+    },
+    data() {
+        return {
+            people: [],
+            selectedPerson: {},
+        }
+    },
+    created() {
+        this.loadPeople();
+    },
+    computed: {
+        isSelected() {
+            return Object.keys(this.selectedPerson).length != 0;
+        }
+    },
+    methods: {
+        loadPeople() {
+            this.people = people;
+        },
+        personSelected(personId) {
+            if (personId) {
+                this.selectedPerson = this.people.find((it) => it._id === +personId);
+            } else {
+               this.selectedPerson = {}; 
+            }
+        },
+    }
 };
 </script>
 

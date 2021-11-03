@@ -2,15 +2,14 @@
     <div class="menu">
         <div class="toolbar">
             <div class="toolbar__header">
-                <template v-if="!isUserOpenned">
+                <template v-if="!isPersonSelected">
                     <h3>Информация</h3>
                 </template>
                 <template v-else>
-                    <div class="action">
-                        <div
-                            class="arrow"
-                            @click="closeProfile"
-                        ></div>
+                    <div 
+                        @click="closeProfile"
+                        class="action">
+                        <div class="arrow"></div>
                     </div>
                     <h3>Профиль</h3>
                 </template>
@@ -18,8 +17,9 @@
             <div class="toolbar__actions"></div>
         </div>
         <div class="content">
+
             <div
-                v-if="!isUserOpenned"
+                v-show="!isPersonSelected"
                 class="legend"
             >
                 <div class="legend__data">
@@ -27,14 +27,16 @@
                         v-if="legend.length > 0"
                         class="legend__items"
                     >
-                        <LegendItem
-                            v-for="(item, index) in legend"
-                            :key="index"
-                            :color="item.color"
-                            :text="item.text"
-                            :counter="item.counter"
-                            class="legend__item"
-                        />
+                        <Draggable>
+                            <LegendItem
+                                v-for="(item, index) in legend"
+                                :key="index"
+                                :color="item.color"
+                                :text="item.text"
+                                :counter="item.counter"
+                                class="legend__item"
+                            />
+                        </Draggable>
                     </div>
                     <span
                         v-else
@@ -44,21 +46,20 @@
                     </span>
                 </div>
                 <div class="legend__chart">
-                    <!-- chart -->
+                    <Doughnut ref="chart" />
                 </div>
             </div>
+
             <div
-                v-else
+                v-show="isPersonSelected"
                 class="profile"
             >
                 <div
-                    v-if="!person"
+                    v-if="isPersonSelected"
                     class="profile__empty"
                 >
-                    Место пустое
+                    <PersonCard :person="selectedPerson"/>
                 </div>
-
-                <PersonCard :person="person" />
             </div>
         </div>
     </div>
@@ -68,14 +69,12 @@
 import LegendItem from "./SideMenu/LegendItem.vue";
 import PersonCard from "./SideMenu/PersonCard.vue";
 import legend from "@/assets/data/legend.json";
+import Draggable from "vuedraggable";
+import { Doughnut } from "vue-chartjs";
 
 export default {
     props: {
-        isUserOpenned: {
-            type: Boolean,
-            default: false,
-        },
-        person: {
+        selectedPerson: {
             type: Object,
             default: null,
         },
@@ -83,6 +82,8 @@ export default {
     components: {
         LegendItem,
         PersonCard,
+        Draggable,
+        Doughnut,
     },
     data() {
         return {
@@ -92,12 +93,40 @@ export default {
     created() {
         this.loadLegend();
     },
+    mounted() {
+        this.makeChart();
+    },
+    computed: {
+        isPersonSelected() {
+            return Object.keys(this.selectedPerson).length != 0;
+        }
+    },
     methods: {
         loadLegend() {
             this.legend = legend;
         },
         closeProfile() {
-            this.$emit("update:isUserOpenned", false);
+            this.$emit("onClose", null);
+        },
+        makeChart() {
+            const chartData = {
+                labels: this.legend.map((legendItem) => legendItem.text),
+                datasets: [
+                    {
+                        label: "Легенда",
+                        backgroundColor: this.legend.map((legendItem) => legendItem.color),
+                        data: this.legend.map((legendItem) => legendItem.counter)
+                    }
+                ]
+            };
+
+            const options = {
+                legend: {
+                    display: false,
+                }
+            };
+
+            this.$refs.chart.renderChart(chartData, options);
         },
     },
 };
